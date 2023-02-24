@@ -1,0 +1,12 @@
+global using System.Net;
+global using System.Reflection; 
+global using MyBlog.Application.Common.Interfaces; 
+global using MyBlog.Application.Common.Models;
+global using MediatR; 
+global using FluentValidation; 
+global using FluentValidation.Results;
+global using Newtonsoft.Json;
+global using MyBlog.Application.Common.Validation;
+global using Microsoft.Extensions.Localization;
+global using System.Security.Claims;
+global using MyBlog.Domain.Common;
