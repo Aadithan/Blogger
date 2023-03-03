@@ -6,9 +6,12 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
+using MyBlog.Domain.Entities;
+
 namespace MyBlog.Infrastructure.Persistence.Context;
 
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplicationDbContext
 {
     private readonly IMediator _mediator;
     private readonly AuditableEntitySaveChangesInterceptor _auditableEntitySaveChangesInterceptor; 
@@ -23,6 +26,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         _auditableEntitySaveChangesInterceptor = auditableEntitySaveChangesInterceptor;
     }
 
+    public virtual DbSet<Posts> Posts { get; set; }
+    
     protected override void OnModelCreating(ModelBuilder builder)
     {
         IntializeIdentityTables(builder);

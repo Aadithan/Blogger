@@ -1,35 +1,45 @@
 ﻿using MyBlog.Infrastructure.Identity;
 using MyBlog.Infrastructure.Persistence.Context;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore; 
+using Microsoft.Extensions.Logging; 
 
 namespace MyBlog.Infrastructure.Persistence.Initialization;
 
-public class ApplicationDbInitializer
+internal class ApplicationDbInitializer
 { 
     private readonly ILogger<ApplicationDbInitializer> _logger;
     private readonly ApplicationDbContext _context;
+    private readonly ApplicationDbSeeder _dbSeeder;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
 
-    public ApplicationDbInitializer(ILogger<ApplicationDbInitializer> logger, ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+    public ApplicationDbInitializer(ApplicationDbContext context, ApplicationDbSeeder dbSeeder, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ILogger<ApplicationDbInitializer> logger)
     {
         _logger = logger; 
         _context = context;
         _userManager = userManager;
+        _dbSeeder = dbSeeder;
         _roleManager = roleManager;
     }  
 
-    public async Task InitialiseAsync()
+    public async Task InitialiseAsync(CancellationToken cancellationToken)
     {
         try
         {
-            if (_context.Database.IsSqlServer())
-            {
-                await _context.Database.MigrateAsync();
+            if (_context.Database.GetMigrations().Any())
+            { 
+                if (_context.Database.IsSqlServer())
+                {
+                    await _context.Database.MigrateAsync();
+                }
+            } 
+
+            if (await _context.Database.CanConnectAsync(cancellationToken))
+            { 
+                await _dbSeeder.SeedDatabaseAsync(_context, cancellationToken);
             }
+
         }
         catch (Exception ex)
         {
@@ -37,43 +47,5 @@ public class ApplicationDbInitializer
             throw;
         }
     }
-
-    public async Task SeedAsync()
-    {
-        try
-        {
-            await TrySeedAsync();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An error occurred while seeding the database.");
-            throw;
-        }
-    }
-
-    public async Task TrySeedAsync()
-    {
-        // Default roles
-        var administratorRole = new IdentityRole("Administrator");
-
-        if (_roleManager.Roles.All(r => r.Name != administratorRole.Name))
-        {
-            await _roleManager.CreateAsync(administratorRole);
-        }
-
-        // Default users
-        var administrator = new ApplicationUser { UserName = "administrator@localhost", Email = "administrator@localhost" };
-
-        if (_userManager.Users.All(u => u.UserName != administrator.UserName))
-        {
-            await _userManager.CreateAsync(administrator, "Administrator1!");
-            if (!string.IsNullOrWhiteSpace(administratorRole.Name))
-            {
-                await _userManager.AddToRolesAsync(administrator, new[] { administratorRole.Name });
-            }
-        }
-
-        // Default data
-        // Seed, if necessary 
-    }
+     
 }

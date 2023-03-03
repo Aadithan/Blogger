@@ -1,9 +1,9 @@
-using MyBlog.Application.Common.Interfaces; 
+using MyBlog.Application.Common.Interfaces;
 using MyBlog.Domain.Common;
 using MyBlog.Infrastructure.Auth;
-using MyBlog.Infrastructure.Common; 
+using MyBlog.Infrastructure.Common;
 using MyBlog.Infrastructure.Persistence.Context;
-using MyBlog.Infrastructure.Persistence.Initialization; 
+using MyBlog.Infrastructure.Persistence.Initialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,17 +35,19 @@ internal static class Startup
         {
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(config.GetConnectionString("DefaultConnection"),
-                    builder => builder.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName))); 
+                    builder => builder.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
         }
-       
+
+      
+
         services
             .AddTransient<ApplicationDbInitializer>()
-           // .AddTransient(provider => provider.GetRequiredService<ApplicationDbContext>()) 
-         
+            // .AddTransient(provider => provider.GetRequiredService<ApplicationDbContext>())
+            .AddTransient<ApplicationDbSeeder>()
            .AddServices(typeof(ICustomSeeder), ServiceLifetime.Transient)
-           .AddTransient<CustomSeederRunner>()  
-           .AddRepositories(); 
-        
+           .AddTransient<CustomSeederRunner>()
+           .AddRepositories();
+
         return services;
     }
 

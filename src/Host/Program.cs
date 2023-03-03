@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using MyBlog.Infrastructure;
 using MyBlog.Host.Controllers.Common;
+using System.Threading;
 
 [assembly: ApiConventionType(typeof(FSHApiConventions))]
 StaticLogger.EnsureInitialized();

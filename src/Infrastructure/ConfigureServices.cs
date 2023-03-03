@@ -55,7 +55,8 @@ public static class ConfigureServices
             .AddDefaultIdentity<ApplicationUser>()
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
-        
+
+        services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         services.AddTransient<IDateTime, DateTimeService>();
         services.AddTransient<IIdentityService, IdentityService>();  
         //services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<IdentityContext>();
@@ -79,11 +80,11 @@ public static class ConfigureServices
         return services;
     }
 
-    public static async Task InitializeDatabasesAsync(this IServiceProvider services)
+    public static async Task InitializeDatabasesAsync(this IServiceProvider services, CancellationToken cancellationToken = default)
     {
         // Create a new scope to retrieve scoped services
         using var scope = services.CreateScope();
-        await scope.ServiceProvider.GetRequiredService<ApplicationDbInitializer>().InitialiseAsync(); 
+        await scope.ServiceProvider.GetRequiredService<ApplicationDbInitializer>().InitialiseAsync(cancellationToken); 
     }
 
     public static IApplicationBuilder UseInfrastructure(this IApplicationBuilder builder, IConfiguration config) =>
